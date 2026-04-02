@@ -10,7 +10,7 @@ A real-time scalable system designed to monitor product prices from multiple sec
 1. **Clone the repository and cd into it:**
    ```bash
    git clone <your-repo-url>
-   cd "entrupy assignment"
+   cd "entrupy assessment"
    ```
 
 2. **Set up and activate the virtual environment:**
