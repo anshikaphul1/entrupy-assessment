@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Price Monitoring Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --surface-color: #1e293b;
+            --primary-color: #38bdf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+        }
+
+        header {
+            background-color: var(--surface-color);
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: #000;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            gap: 2rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background-color: var(--surface-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .product-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .product-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary-color);
+        }
+
+        .product-brand {
+            font-size: 0.875rem;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .product-model {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0.5rem 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .product-price {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .product-source {
+            display: inline-block;
+            background-color: var(--border-color);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        #detail-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(4px);
+            z-index: 50;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--surface-color);
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .close-btn:hover { color: var(--text-main); }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .history-table th, .history-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .history-table th { color: var(--text-muted); font-weight: 500; }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .filters select {
+            background: var(--surface-color);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+        }
+        
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Price Monitor</h1>
+        <button class="btn" id="refresh-btn">Trigger Data Refresh</button>
+    </header>
+
+    <main>
+        <section class="dashboard-grid">
+            <div class="card">
+                <h2>Total Products Tracking</h2>
+                <div class="stat-value" id="stat-total">-</div>
+            </div>
+            <div class="card">
+                <h2>Products by Source</h2>
+                <div id="stat-sources" style="margin-top: 1rem; color: var(--text-muted);">
+                    Loading...
+                </div>
+            </div>
+            <div class="card">
+                <h2>Average Prices</h2>
+                <div id="stat-avg" style="margin-top: 1rem; color: var(--text-muted); font-size: 0.875rem;">
+                    Loading...
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="filters">
+                <select id="source-filter">
+                    <option value="">All Sources</option>
+                    <option value="grailed">Grailed</option>
+                    <option value="fashionphile">Fashionphile</option>
+                    <option value="1stdibs">1stDibs</option>
+                </select>
+            </div>
+            <div class="product-list" id="product-list">
+                <!-- Products injected via JS -->
+                 <p style="color: var(--text-muted);">Loading products...</p>
+            </div>
+        </section>
+    </main>
+
+    <div id="detail-modal">
+        <div class="modal-content">
+            <button class="close-btn" id="close-modal">&times;</button>
+            <div id="modal-body">
+                <!-- Data injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
